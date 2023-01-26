@@ -4,8 +4,22 @@ class Keyboard
 {
 public:
     // Keyboard and text-length
-    char keymap[2][4][10] = {{{'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'}, {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '~'}, {'^', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '!', '<'}, {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}}, {{'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'}, {'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '~'}, {'^', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ' ', '<'}, {'<', '>', ',', '.', '-', '_', '+', '*', '/', '\\'}}};
+    // char keymap[2][4][10] = {{{'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'}, {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '~'}, {'^', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ' ', '<'}, {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}}, {{'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'}, {'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '~'}, {'^', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ' ', '<'}, {'<', '>', ',', '.', '-', '_', '+', '*', '/', '\\'}}};
+    char keymap[3][4][10] = {
+        {{'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'},
+         {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '<'},
+         {'^', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '*', '~'},
+         {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}},
+        {{'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'},
+         {'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '<'},
+         {'^', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '*', '~'},
+         {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}},
+        {{'!', '"', '@', '#', '%', '&', '/', '(', ')', '='},
+         {'<', '>', '|', '\\', '$', '{', '[', ']', '}', '<'},
+         {':', ';', '~', ',', '.', '-', '_', '*', '*', '~'},
+         {'`', '\'', '^', '+', '?', ' ', ' ', ' ', ' ', ' '}}};
     int shift = 1;
+    int capsLevel = 0;
     int csel = 0;
     int rsel = 0;
     int textLength = 0;
@@ -13,6 +27,8 @@ public:
     // Keeping track of stuff
     bool showkeyboard = false;
     bool pressedShift = false;
+    bool pressedSpecialChars = false;
+    bool pressedNothing = false;
     bool deletingSecondKeystring = false;
 
 #define KEYSTRING_BUFFER_SIZE (31)
@@ -63,6 +79,7 @@ public:
                 }
                 updateKeyboard();
             }
+
             if (M5.BtnC.wasPressed())
             {
                 rsel = rsel + 1;
@@ -86,6 +103,25 @@ public:
                     if (shift > 1)
                         shift = 0;
                     updateKeyboard();
+                }
+                else if ((rsel == 2) && (csel == 8))
+                {
+                    // Show special characters
+                    pressedSpecialChars = true;
+                    if (shift == 2)
+                    {
+                        shift = capsLevel;
+                    }
+                    else
+                    {
+                        capsLevel = shift;
+                        shift = 2;
+                    }
+                    updateKeyboard();
+                }
+                else if (((rsel == 3) && (shift == 2)) && ((csel == 6) || (csel == 7) || (csel == 8) || (csel == 9)))
+                {
+                    pressedNothing = true;
                 }
                 else if ((rsel == 1) && (csel == 9))
                 {
@@ -155,7 +191,7 @@ public:
                     }
                 }
 
-                if (!pressedShift)
+                if (!pressedShift && !pressedSpecialChars && !pressedNothing)
                 {
                     // Insert cursorPipe and update text
                     // If  the second row was just removed
@@ -184,6 +220,8 @@ public:
                 else
                 {
                     pressedShift = false;
+                    pressedSpecialChars = false;
+                    pressedNothing = false;
                 }
                 // TextLength is calculated
                 textLength = strlen(firstKeystring) + strlen(secondKeystring);
@@ -269,15 +307,23 @@ public:
 
                 if ((c == 9) && (r == 1))
                 {
-                    M5.Lcd.drawString("<-'", x + 10, y + 7, 2);
+                    // Backspace
+                    M5.Lcd.drawString("<-", x + 10, y + 7, 2);
+                }
+                else if ((c == 5) && (r == 3) && (shift == 2))
+                {
+                    // Space
+                    M5.Lcd.drawString("__", x + 7, y + 7, 2);
                 }
                 else if ((c == 8) && (r == 2))
                 {
-                    M5.Lcd.drawString("__", x + 7, y + 7, 2);
+                    // Special characters
+                    M5.Lcd.drawString("$#!", x + 6, y + 7, 2);
                 }
                 else if ((c == 9) && (r == 2))
                 {
-                    M5.Lcd.drawString("<-", x + 10, y + 7, 2);
+                    // ENTER / RETURN
+                    M5.Lcd.drawString("<-'", x + 10, y + 7, 2);
                 }
                 else
                 {
