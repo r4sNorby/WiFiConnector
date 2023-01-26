@@ -11,7 +11,6 @@ CRGB leds[NUM_LEDS];
 
 // Class instances
 WiFiClient espClient;
-Keyboard keyboard;
 
 // WiFi connection variables
 const char *ssid = "SKPWIFI";
@@ -79,6 +78,7 @@ void loop()
 
 void setupWifi()
 {
+  Keyboard keyboard;
   password = keyboard.start();
   delay(10);
   M5.Lcd.printf("Connecting to %s", ssid);
