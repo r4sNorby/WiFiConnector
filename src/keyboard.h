@@ -123,14 +123,14 @@ public:
                 {
                     pressedNothing = true;
                 }
-                else if ((rsel == 1) && (csel == 9))
+                else if ((rsel == 2) && (csel == 9))
                 {
                     // RETURN / ENTER
                     M5.Lcd.clear();
                     mergeKeystrings();
                     showkeyboard = false;
                 }
-                else if ((rsel == 2) && (csel == 9))
+                else if ((rsel == 1) && (csel == 9))
                 {
                     // Backspace
                     if (textLength > 0)
