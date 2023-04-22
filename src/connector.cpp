@@ -14,14 +14,13 @@ CRGB leds[NUM_LEDS];
 WiFiClient espClient;
 
 // WiFi connection variables
-const char *ssid = "SKPWIFI";
-const char *password;
-
-int j;
+char *chosenNetwork;
+char *password;
 
 // FUNCTIONS
 // Wifi
 void setupWifi();
+char *scanForWifi();
 
 // LED function
 void setLEDStrip(int colour);
@@ -50,28 +49,45 @@ void loop()
 	{
 		Selector selector;
 
-		char keymap[8][33] = {
-			{"Room Of Requirements"},
-			{"12512512"},
-			{"211256dsggs"},
-			{"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
-			{"Testing"},
-			{"CandyNetwork"},
-			{"Hiii"},
-			{"LastNetwork"}};
+		// char networks[] = scanForWifi();
 
-		char *result = selector.start(keymap, 8);
-		M5.Lcd.fillScreen(TFT_BLACK);
-		M5.Lcd.setTextSize(2);
-		M5.Lcd.setCursor(0, 20); // Set the cursor at (x, y).
-		M5.Lcd.println(result);
-		// M5.Lcd.println(j);
+		M5.Lcd.clear(); // Clear the screen.
+		M5.Lcd.println("scan start");
+		int n = WiFi.scanNetworks(); // return the number of networks found.
 
-		j++;
+		char networks[n][33];
+
+		if (n == 0)
+		{ // If no network is found.
+			M5.Lcd.println("no networks found");
+		}
+		else
+		{ // If have network is found.
+			M5.Lcd.printf("networks found:%d\n\n", n);
+			for (int i = 0; i < n; ++i)
+			{
+				// Add ssid's to array
+				for (int j = 0; j < 33; ++j)
+				{
+					networks[i][j] = WiFi.SSID(i)[j];
+					M5.Lcd.print(WiFi.SSID(i)[j]);
+				}
+			}
+		}
+
+		chosenNetwork = selector.start(networks, n);
+		M5.Lcd.clear();
+		M5.Lcd.setCursor(0, 0); // Set the cursor at (x, y).
+		M5.Lcd.println(chosenNetwork);
 	}
 	else if (M5.BtnB.wasPressed())
 	{
 		M5.Speaker.tone(661, 100);
+		if (chosenNetwork != NULL)
+		{
+			M5.Lcd.clear();
+			setupWifi();
+		}
 	}
 	delay(1);
 	M5.update(); // Check the status of the key.
@@ -82,9 +98,9 @@ void setupWifi()
 	Keyboard keyboard;
 	password = keyboard.start();
 	delay(10);
-	M5.Lcd.printf("Connecting to %s", ssid);
-	WiFi.mode(WIFI_STA);		// Set the mode to WiFi station mode.
-	WiFi.begin(ssid, password); // Start Wifi connection.
+	M5.Lcd.printf("Connecting to %s", chosenNetwork);
+	WiFi.mode(WIFI_STA);				 // Set the mode to WiFi station mode.
+	WiFi.begin(chosenNetwork, password); // Start Wifi connection.
 
 	int wifiWaitTime = 0;
 	int i = 0;
@@ -141,37 +157,7 @@ void setLEDStrip(int colour)
 	FastLED.show();
 }
 
-void runWifi()
-{
-	if (M5.BtnA.isPressed())
-	{
-		//// If button A is pressed.
-		//   M5.Lcd.clear(); // Clear the screen.
-		//   M5.Lcd.println("scan start");
-		//   int n = WiFi.scanNetworks(); // return the number of networks found.
-		//   if (n == 0)
-		//   { // If no network is found.
-		//     M5.Lcd.println("no networks found");
-		//   }
-		//   else
-		//   { // If have network is found.
-		//     M5.Lcd.printf("networks found:%d\n\n", n);
-		//     for (int i = 0; i < n;
-		//          ++i)
-		//     { // Print SSID and RSSI for each network found.
-		//       M5.Lcd.printf("%d:", i + 1);
-		//       M5.Lcd.print(WiFi.SSID(i));
-		//       M5.Lcd.printf("(%d)", WiFi.RSSI(i));
-		//       M5.Lcd.println(
-		//           (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
-		//       delay(10);
-		//     }
-		//   }
-		//   delay(1000);
-		// }
-		// else if (M5.BtnB.isPressed())
-		// {
-		//   M5.Lcd.clear();
-		//   setupWifi();
-	}
-}
+// char scanForWifi()
+// {
+// 	return networks;
+// }
