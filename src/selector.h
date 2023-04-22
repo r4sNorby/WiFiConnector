@@ -13,7 +13,7 @@ public:
         // Setup
         M5.Speaker.begin();
         M5.Lcd.setTextSize(1);
-        M5.Lcd.fillScreen(TFT_BLACK);
+        M5.Lcd.clear(); // Clear the screen.
         M5.Lcd.setCursor(0, 0);
 
         // Pre-fill chosenField with null terminator
