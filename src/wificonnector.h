@@ -84,7 +84,7 @@ public:
                 {
                     M5.Speaker.tone(661, 100);
                     M5.Lcd.clear();
-                    setupWiFi();
+                    connectToWiFi();
                     readyToConnect = false;
                 }
             }
@@ -93,7 +93,7 @@ public:
         }
     }
 
-    void setupWiFi()
+    void connectToWiFi()
     {
         Keyboard keyboard;
         password = keyboard.start();

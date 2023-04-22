@@ -14,6 +14,8 @@ void loop()
     {
         WiFiConnector connector;
         connector.scanForWiFi();
+        M5.Lcd.clear(); // Clear the screen.
+        M5.Lcd.println("Connected");
     }
     delay(1);
     M5.update();
