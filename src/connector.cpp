@@ -13,12 +13,13 @@ CRGB leds[NUM_LEDS];
 WiFiClient espClient;
 
 // WiFi connection variables
-const char *ssid = "SKPWIFI";
+const char *ssid = "Sde-Guest";
 const char *password;
 
 // FUNCTIONS
 // Wifi
 void setupWifi();
+void scanForWifi();
 
 // LEDs OFF
 void setLEDStrip(int colour);
@@ -27,6 +28,7 @@ void setup()
 {
   M5.begin();       // Init M5Stack.
   M5.Power.begin(); // Init power
+  // M5.Lcd.setTextSize(2);
 
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS); // GRB ordering is assumed
   FastLED.setBrightness(40);
@@ -42,38 +44,48 @@ void setup()
 void loop()
 {
   M5.Lcd.setCursor(0, 0); // Set the cursor at (0,0).
-  M5.Lcd.println("Please press Btn.A to (re)scan");
+  M5.Lcd.println("Press A to (re)scan");
   M5.update(); // Check the status of the key.
   if (M5.BtnA.isPressed())
-  {                 // If button A is pressed.
-    M5.Lcd.clear(); // Clear the screen.
-    M5.Lcd.println("scan start");
-    int n = WiFi.scanNetworks(); // return the number of networks found.
-    if (n == 0)
-    { // If no network is found.
-      M5.Lcd.println("no networks found");
-    }
-    else
-    { // If have network is found.
-      M5.Lcd.printf("networks found:%d\n\n", n);
-      for (int i = 0; i < n;
-           ++i)
-      { // Print SSID and RSSI for each network found.
-        M5.Lcd.printf("%d:", i + 1);
-        M5.Lcd.print(WiFi.SSID(i));
-        M5.Lcd.printf("(%d)", WiFi.RSSI(i));
-        M5.Lcd.println(
-            (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
-        delay(10);
-      }
-    }
-    delay(1000);
+  { // If button A is pressed.
+    scanForWifi();
   }
   else if (M5.BtnB.isPressed())
   {
     M5.Lcd.clear();
     setupWifi();
   }
+}
+
+void scanForWifi()
+{
+  M5.Lcd.clear(); // Clear the screen.
+  M5.Lcd.println("Scan start");
+  int n = WiFi.scanNetworks(); // return the number of networks found.
+  if (n == 0)
+  { // If no network is found.
+    M5.Lcd.println("No networks found");
+  }
+  else
+  { // If have network is found.
+    M5.Lcd.printf("Networks found:%d\n\n", n);
+    int lineHeight = 62;
+    for (int i = 0; i < n; ++i)
+    {
+      // Print SSID and RSSI for each network found.
+      if (i != 0)
+      {
+        lineHeight = lineHeight + 20;
+      }
+      M5.Lcd.printf("%d:", i + 1);
+      // M5.Lcd.drawNumber(i + 1, 20, lineHeight);
+      M5.Lcd.print(WiFi.SSID(i));
+      M5.Lcd.printf("(%d)", WiFi.RSSI(i));
+      M5.Lcd.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+      delay(10);
+    }
+  }
+  delay(1000);
 }
 
 void setupWifi()
